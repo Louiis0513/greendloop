@@ -31,7 +31,12 @@ if ($mensaje === "") {
 
     <div class="nav-cuenta">
         <?php if (usuarioLogueado()): ?>
-            <span>Hola, <?= e($_SESSION["nombre"]) ?></span>
+            <div class="nav-saludo">
+    <span class="nav-saludo-etiqueta">Bienvenido</span>
+    <span class="nav-saludo-nombre">
+        <?= e($_SESSION["nombre"]) ?>
+    </span>
+</div>
             <form action="logout.php" method="post">
                 <button type="submit" class="link">Salir</button>
             </form>
