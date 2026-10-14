@@ -5,44 +5,35 @@ body {
     color: #244333;
 }
 
-/* ---------- Barra de navegación ---------- */
+/* Menu */
 .nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
     flex-wrap: wrap;
     background: #1c6245;
-    padding: 14px 30px;
+    padding: 15px 30px;
 }
 .nav a {
-    color: #dceedd;
+    color: white;
     text-decoration: none;
     font-weight: bold;
-    padding: 8px 12px;
-    border-radius: 7px;
+    margin: 0 10px;
 }
-.nav a:hover,
 .nav a.activo {
-    color: white;
-    background: #ffffff22;
+    text-decoration: underline;
 }
 .nav .logo {
-    color: white;
     font-size: 22px;
-    padding-left: 0;
-}
-.nav .logo:hover {
-    background: none;
-}
-.nav-links,
-.nav-cuenta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    margin-left: 0;
 }
 .nav-links {
     flex: 1;
+    margin-left: 20px;
+}
+.nav-cuenta {
+    display: flex;
+    align-items: center;
 }
 .nav-cuenta span {
     color: #dceedd;
@@ -54,31 +45,16 @@ body {
     margin: 0;
     box-shadow: none;
 }
-
-/* Botones dentro del menú */
-.nav .btn {
-    background: #f1f7ef;
-    color: #1c6245;
-}
-.nav .btn:hover,
-.nav .btn.activo {
-    background: white;
-    color: #1c6245;
-}
 .nav button.link {
     width: auto;
-    margin: 0;
-    padding: 8px 12px;
+    margin: 0 0 0 10px;
+    padding: 0;
     background: none;
-    color: #dceedd;
+    color: white;
     font-weight: bold;
     font-size: 16px;
 }
-.nav button.link:hover {
-    color: white;
-}
 
-/* ---------- Contenido ---------- */
 main {
     max-width: 1000px;
     margin: 30px auto;
@@ -117,35 +93,225 @@ button {
     border-radius: 8px;
 }
 
-/* ---------- Portada ---------- */
-.portada {
-    text-align: center;
-    padding: 40px 20px;
+/* Inicio */
+body.pagina-inicio {
+    background: #f7f3ec;
 }
-.portada h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
+body.pagina-inicio .nav,
+body.pagina-inicio footer {
+    background: #2f4a36;
 }
-.portada p {
+.inicio {
+    font-family: "Inter", Arial, sans-serif;
+    color: #3a3a32;
+    line-height: 1.6;
+}
+.inicio h1,
+.inicio h2,
+.inicio h3,
+.inicio blockquote {
+    font-family: "Fraunces", Georgia, serif;
+    color: #2f4a36;
+}
+.inicio section {
+    margin-bottom: 90px;
+}
+.inicio img {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 18px;
+}
+
+.inicio-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 50px;
+    align-items: center;
+    margin-top: 20px;
+}
+.inicio-hero h1 {
+    font-size: 50px;
+    line-height: 1.1;
+    margin: 10px 0 20px;
+}
+.inicio-hero p {
     font-size: 18px;
 }
-.acciones {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 25px;
+.inicio-hero img {
+    height: 480px;
 }
-.boton {
-    display: inline-block;
-    padding: 12px 22px;
-    border-radius: 7px;
+.inicio-etiqueta {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 13px !important;
+    font-weight: 600;
+    color: #6b7f4e;
+    margin: 0;
+}
+.inicio-acciones {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-top: 30px;
+}
+.inicio-boton {
+    background: #c0643c;
+    color: white;
+    padding: 14px 26px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+}
+.inicio-boton:hover {
+    background: #a8532f;
+}
+.inicio-enlace {
+    color: #2f4a36;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid #c9d2b5;
+}
+.inicio-enlace:hover {
+    border-color: #2f4a36;
+}
+
+.inicio-pasos h2 {
+    text-align: center;
+    font-size: 34px;
+    margin-bottom: 40px;
+}
+.inicio-pasos-lista {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+.inicio-paso {
+    text-align: center;
+    padding: 0 10px;
+}
+.inicio-paso + .inicio-paso {
+    border-left: 1px solid #e3dccd;
+}
+.inicio-paso svg {
+    width: 42px;
+    height: 42px;
+    fill: none;
+    stroke: #6b7f4e;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+}
+.inicio-paso h3 {
+    font-size: 22px;
+    margin: 10px 0 5px;
+}
+
+.inicio-formas,
+.inicio-porque {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+}
+.inicio-formas {
+    background: #e4e6d3;
+    padding: 40px;
+    border-radius: 24px;
+}
+.inicio-formas img,
+.inicio-porque img {
+    height: 340px;
+}
+.inicio-formas h2 {
+    font-size: 32px;
+    margin-top: 0;
+}
+.inicio-forma {
+    border-top: 1px solid #c9cdb0;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+.inicio-forma h3 {
+    margin: 0;
+    font-size: 21px;
+}
+.inicio-forma p {
+    margin: 5px 0 0;
+}
+
+.inicio-recientes-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.inicio-recientes h2 {
+    font-size: 32px;
+}
+.inicio-tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+.inicio-tarjeta {
+    background: #fffdf8;
+    border: 1px solid #e3dccd;
+    border-radius: 16px;
+    padding: 25px;
+}
+.inicio-tarjeta h3 {
+    margin: 5px 0;
+    font-size: 21px;
+}
+.inicio-tarjeta-categoria {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #c0643c;
+    margin: 0;
+}
+.inicio-tarjeta-autor {
+    font-size: 14px;
+    color: #7a7766;
+    margin-bottom: 0;
+}
+.inicio-vacio {
+    background: #fffdf8;
+    border: 1px dashed #d6cdb9;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+}
+
+.inicio-porque blockquote {
+    font-size: 30px;
+    font-style: italic;
+    line-height: 1.3;
+    margin: 0 0 20px;
+}
+
+@media (max-width: 800px) {
+    .inicio-hero,
+    .inicio-formas,
+    .inicio-porque,
+    .inicio-pasos-lista {
+        grid-template-columns: 1fr;
+    }
+    .inicio-hero h1 {
+        font-size: 38px;
+    }
+    .inicio-hero img {
+        height: 320px;
+    }
+    .inicio-paso + .inicio-paso {
+        border-left: none;
+    }
+}
+
+footer {
     background: #1c6245;
     color: white;
-    text-decoration: none;
-    font-weight: bold;
-}
-.boton.secundario {
-    background: white;
-    color: #1c6245;
-    border: 2px solid #1c6245;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    font-size: 14px;
 }
