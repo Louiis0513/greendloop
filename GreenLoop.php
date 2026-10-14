@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             exit;
         }
 
-        $mensaje = "Correo o contraseña incorrectos.";
+        $mensaje = "Datos erroneos.";
     }
 
     if ($accion === "publicar" && isset($_SESSION["usuario"])) {
