@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f7ef;
+    color: #244333;
+}
+
+/* ---------- Barra de navegación ---------- */
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: #1c6245;
+    padding: 14px 30px;
+}
+.nav a {
+    color: #dceedd;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 7px;
+}
+.nav a:hover,
+.nav a.activo {
+    color: white;
+    background: #ffffff22;
+}
+.nav .logo {
+    color: white;
+    font-size: 22px;
+    padding-left: 0;
+}
+.nav .logo:hover {
+    background: none;
+}
+.nav-links,
+.nav-cuenta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.nav-links {
+    flex: 1;
+}
+.nav-cuenta span {
+    color: #dceedd;
+}
+.nav form {
+    display: inline;
+    background: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* Botones dentro del menú */
+.nav .btn {
+    background: #f1f7ef;
+    color: #1c6245;
+}
+.nav .btn:hover,
+.nav .btn.activo {
+    background: white;
+    color: #1c6245;
+}
+.nav button.link {
+    width: auto;
+    margin: 0;
+    padding: 8px 12px;
+    background: none;
+    color: #dceedd;
+    font-weight: bold;
+    font-size: 16px;
+}
+.nav button.link:hover {
+    color: white;
+}
+
+/* ---------- Contenido ---------- */
+main {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 20px;
+}
+h1, h2 { color: #1c6245; }
+form, .producto {
+    background: white;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #0001;
+}
+input, textarea, select, button {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin: 7px 0;
+    border: 1px solid #c5d8c8;
+    border-radius: 7px;
+}
+button {
+    background: #1c6245;
+    color: white;
+    cursor: pointer;
+    border: none;
+}
+.productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 15px;
+}
+.mensaje {
+    background: #dceedd;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* ---------- Portada ---------- */
+.portada {
+    text-align: center;
+    padding: 40px 20px;
+}
+.portada h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+.portada p {
+    font-size: 18px;
+}
+.acciones {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 25px;
+}
+.boton {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 7px;
+    background: #1c6245;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+.boton.secundario {
+    background: white;
+    color: #1c6245;
+    border: 2px solid #1c6245;
+}
