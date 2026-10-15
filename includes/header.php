@@ -7,47 +7,58 @@ if ($mensaje === "") {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Green Loop</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Green Loop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body class="<?= $claseBody ?? "" ?>">
+<body class="<?= e($claseBody ?? "") ?>">
 
-<nav class="nav">
+<nav class="nav" aria-label="Principal">
     <a href="index.php" class="logo">Green Loop</a>
 
-    <div class="nav-links">
-        <a href="catalogo.php" class="<?= claseActiva("catalogo.php") ?>">Explorar objetos</a>
+    <button
+        type="button"
+        class="nav-toggle"
+        id="nav-toggle"
+        aria-expanded="false"
+        aria-controls="nav-panel"
+        aria-label="Abrir menú"
+    >
+        <span aria-hidden="true"></span>
+    </button>
 
-        <?php if (usuarioLogueado()): ?>
-            <a href="mis_solicitudes.php" class="<?= claseActiva("mis_solicitudes.php") ?>">Mis solicitudes</a>
-            <a href="perfil.php">Mi perfil</a>
-            <a href="mis_publicaciones.php"
-   class="<?= claseActiva("mis_publicaciones.php") ?>">
-    Mis publicaciones
-</a><a href="publicar.php" class="<?= claseActiva("publicar.php") ?>">Publicar</a>
-        <?php endif; ?>
-    </div>
+    <div class="nav-overlay" id="nav-overlay"></div>
 
-    <div class="nav-cuenta">
-        <?php if (usuarioLogueado()): ?>
-            <div class="nav-saludo">
-    <span class="nav-saludo-etiqueta">Bienvenido</span>
-    <span class="nav-saludo-nombre">
-        <?= e($_SESSION["nombre"]) ?>
-    </span>
-</div>
-            <form action="logout.php" method="post">
-                <button type="submit" class="link">Salir</button>
-            </form>
-        <?php else: ?>
-            <a href="login.php" class="<?= claseActiva("login.php") ?>">Iniciar sesión</a>
-            <a href="registro.php" class="<?= claseActiva("registro.php") ?>">Crear cuenta</a>
-        <?php endif; ?>
+    <div class="nav-panel" id="nav-panel">
+        <div class="nav-links">
+            <a href="catalogo.php" class="<?= claseActiva("catalogo.php") ?>">Explorar</a>
+
+            <?php if (usuarioLogueado()): ?>
+                <a href="publicar.php" class="<?= claseActiva("publicar.php") ?>">Publicar</a>
+                <a href="mis_publicaciones.php" class="<?= claseActiva("mis_publicaciones.php") ?>">Mis publicaciones</a>
+                <a href="mis_solicitudes.php" class="<?= claseActiva("mis_solicitudes.php") ?>">Mis solicitudes</a>
+                <a href="perfil.php" class="<?= claseActiva("perfil.php") ?>">Mi perfil</a>
+            <?php endif; ?>
+        </div>
+
+        <div class="nav-cuenta">
+            <?php if (usuarioLogueado()): ?>
+                <div class="nav-saludo">
+                    <span class="nav-saludo-etiqueta">Bienvenido</span>
+                    <span class="nav-saludo-nombre"><?= e($_SESSION["nombre"]) ?></span>
+                </div>
+                <form action="logout.php" method="post">
+                    <button type="submit" class="link">Salir</button>
+                </form>
+            <?php else: ?>
+                <a href="login.php" class="<?= claseActiva("login.php") ?>">Iniciar sesión</a>
+                <a href="registro.php" class="<?= claseActiva("registro.php") ?>">Crear cuenta</a>
+            <?php endif; ?>
+        </div>
     </div>
 </nav>
 

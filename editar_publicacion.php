@@ -80,11 +80,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 require __DIR__ . "/includes/header.php";
 ?>
 
-<section>
-    <h2>Editar publicación</h2>
+<section class="auth-wrap form-ancho">
+    <div class="pagina-titulo">
+        <h2>Editar publicación</h2>
+        <p>Actualiza los datos de tu objeto.</p>
+    </div>
 
     <?php if ($error !== ""): ?>
-        <p class="mensaje"><?= e($error) ?></p>
+        <p class="mensaje mensaje-error"><?= e($error) ?></p>
     <?php endif; ?>
 
     <form method="post">

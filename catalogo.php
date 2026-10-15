@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 
@@ -25,10 +24,10 @@ if ($busqueda !== "") {
     $tipos .= "ss";
 }
 
-if ($tipo !== "") {
-    $condiciones[] = "p.tipo_publicacion = ?";
-    $parametros[] = $tipo;
-    $tipos .= "s";
+if ($tipo === "regalo") {
+    $condiciones[] = "LOWER(p.tipo_publicacion) IN ('regalo')";
+} elseif ($tipo === "intercambio") {
+    $condiciones[] = "LOWER(p.tipo_publicacion) IN ('intercambio', 'trueque')";
 }
 
 if ($categoria !== "") {
@@ -54,7 +53,6 @@ $resultado = $stmt->get_result();
 $productos = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-/* Categorías del filtro */
 $categorias = [
     ["categoria" => "Ropa"],
     ["categoria" => "Libros"],
@@ -64,118 +62,181 @@ $categorias = [
     ["categoria" => "Otros"]
 ];
 
+$logueado = usuarioLogueado();
+$idUsuarioActual = $logueado ? (int) $_SESSION["usuario"] : 0;
+
 require __DIR__ . "/includes/header.php";
 ?>
 
-<h2>Catálogo de objetos</h2>
+<div class="pagina-titulo">
+    <h2>Catálogo de objetos</h2>
+    <p>Encuentra objetos para regalar o intercambiar con la comunidad.</p>
+</div>
 
-<p>Encuentra objetos para regalar o intercambiar con la comunidad.</p>
-
-<?php if (!usuarioLogueado()): ?>
-    <p><a href="login.php">Inicia sesión</a> para solicitar objetos.</p>
+<?php if (!$logueado): ?>
+    <p class="mensaje">
+        <a href="login.php">Inicia sesión</a> para solicitar objetos.
+    </p>
 <?php endif; ?>
 
 <form method="get" action="catalogo.php" class="filtros-catalogo">
+    <div class="filtro-campo">
+        <label for="buscar">Buscar</label>
+        <input
+            type="search"
+            id="buscar"
+            name="buscar"
+            placeholder="Ej. mochila, libro..."
+            value="<?= e($busqueda) ?>"
+        >
+    </div>
 
-    <label for="buscar">Buscar objeto</label>
-    <input
-        type="search"
-        id="buscar"
-        name="buscar"
-        placeholder="Ej. mochila, libro..."
-        value="<?= e($busqueda) ?>"
-    >
+    <div class="filtro-campo">
+        <label for="tipo">Tipo</label>
+        <select name="tipo" id="tipo">
+            <option value="">Todos</option>
+            <option value="regalo" <?= $tipo === "regalo" ? "selected" : "" ?>>Regalo</option>
+            <option value="intercambio" <?= $tipo === "intercambio" ? "selected" : "" ?>>Intercambio</option>
+        </select>
+    </div>
 
-    <label for="tipo">Tipo de publicación</label>
-    <select name="tipo" id="tipo">
-        <option value="">Todos los tipos</option>
-        <option value="Regalo" <?= $tipo === "Regalo" ? "selected" : "" ?>>
-            Regalo
-        </option>
-        <option value="Trueque" <?= $tipo === "Trueque" ? "selected" : "" ?>>
-            Trueque
-        </option>
-    </select>
+    <div class="filtro-campo">
+        <label for="categoria">Categoría</label>
+        <select name="categoria" id="categoria">
+            <option value="">Todas</option>
+            <?php foreach ($categorias as $cat): ?>
+                <option
+                    value="<?= e($cat["categoria"]) ?>"
+                    <?= $categoria === $cat["categoria"] ? "selected" : "" ?>
+                >
+                    <?= e($cat["categoria"]) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
 
-    <label for="categoria">Categoría</label>
-    <select name="categoria" id="categoria">
-        <option value="">Todas las categorías</option>
-
-        <?php foreach ($categorias as $cat): ?>
-            <option
-                value="<?= e($cat["categoria"]) ?>"
-                <?= $categoria === $cat["categoria"] ? "selected" : "" ?>
-            >
-                <?= e($cat["categoria"]) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-
-    <button type="submit">Buscar y filtrar</button>
-    <a href="catalogo.php">Limpiar filtros</a>
-
+    <div class="filtros-acciones">
+        <button type="submit">Filtrar</button>
+        <a href="catalogo.php" class="boton secundario">Limpiar</a>
+    </div>
 </form>
 
-<p>
-    Objetos encontrados: <strong><?= count($productos) ?></strong>
+<?php if ($busqueda !== "" || $tipo !== "" || $categoria !== ""): ?>
+    <div class="filtros-chips">
+        <?php if ($busqueda !== ""): ?>
+            <span class="chip">
+                “<?= e($busqueda) ?>”
+                <a href="catalogo.php?<?= e(http_build_query(array_filter(["tipo" => $tipo, "categoria" => $categoria]))) ?>" aria-label="Quitar búsqueda">×</a>
+            </span>
+        <?php endif; ?>
+        <?php if ($tipo !== ""): ?>
+            <span class="chip">
+                <?= e($tipo) ?>
+                <a href="catalogo.php?<?= e(http_build_query(array_filter(["buscar" => $busqueda, "categoria" => $categoria]))) ?>" aria-label="Quitar tipo">×</a>
+            </span>
+        <?php endif; ?>
+        <?php if ($categoria !== ""): ?>
+            <span class="chip">
+                <?= e($categoria) ?>
+                <a href="catalogo.php?<?= e(http_build_query(array_filter(["buscar" => $busqueda, "tipo" => $tipo]))) ?>" aria-label="Quitar categoría">×</a>
+            </span>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
+<p class="resultado-meta">
+    <span>Objetos encontrados: <strong><?= count($productos) ?></strong></span>
 </p>
 
 <?php if (count($productos) === 0): ?>
-    <p>No encontramos objetos con esos filtros.</p>
+    <p class="vacio">No encontramos objetos con esos filtros.</p>
+<?php else: ?>
+    <div class="productos">
+        <?php foreach ($productos as $p): ?>
+            <?php
+            $esPropio = $logueado && $idUsuarioActual === (int) $p["id_usuario"];
+            $puedeSolicitar = $logueado && !$esPropio;
+            ?>
+            <article class="producto">
+                <div class="producto-media">
+                    <?php if (!empty($p["imagen"])): ?>
+                        <img
+                            src="<?= e($p["imagen"]) ?>"
+                            alt="<?= e($p["nombre"]) ?>"
+                        >
+                    <?php endif; ?>
+                </div>
+                <div class="producto-cuerpo">
+                    <div class="badges">
+                        <span class="badge"><?= e($p["categoria"]) ?></span>
+                        <span class="badge badge-tipo"><?= e($p["tipo_publicacion"]) ?></span>
+                    </div>
+                    <h3><?= e($p["nombre"]) ?></h3>
+                    <p class="producto-desc"><?= e($p["descripcion"]) ?></p>
+                    <p class="producto-autor">Publicado por <?= e($p["propietario"]) ?></p>
+
+                    <?php if ($puedeSolicitar): ?>
+                        <button
+                            type="button"
+                            class="boton"
+                            data-abrir-solicitud
+                            data-id="<?= (int) $p["id_producto"] ?>"
+                            data-nombre="<?= e($p["nombre"]) ?>"
+                            data-descripcion="<?= e($p["descripcion"]) ?>"
+                            data-categoria="<?= e($p["categoria"]) ?>"
+                            data-tipo="<?= e($p["tipo_publicacion"]) ?>"
+                            data-autor="<?= e($p["propietario"]) ?>"
+                            data-imagen="<?= e($p["imagen"] ?? "") ?>"
+                        >
+                            Solicitar objeto
+                        </button>
+                    <?php elseif ($esPropio): ?>
+                        <a href="mis_publicaciones.php" class="boton secundario">Tu publicación</a>
+                    <?php else: ?>
+                        <a href="login.php" class="boton secundario">Inicia sesión para solicitar</a>
+                    <?php endif; ?>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
 <?php endif; ?>
 
-<div class="productos">
+<?php if ($logueado): ?>
+<div
+    class="modal"
+    id="modal-solicitud"
+    aria-hidden="true"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-titulo"
+>
+    <div class="modal-backdrop" data-cerrar-modal></div>
+    <div class="modal-dialog">
+        <button type="button" class="modal-cerrar" aria-label="Cerrar">×</button>
+        <div class="modal-media">
+            <img id="modal-imagen" alt="">
+        </div>
+        <div class="modal-cuerpo">
+            <div class="badges" id="modal-meta"></div>
+            <h3 id="modal-titulo"></h3>
+            <p id="modal-descripcion"></p>
+            <p class="producto-autor" id="modal-autor"></p>
 
-    <?php foreach ($productos as $p): ?>
-
-        <article class="producto">
-
-            <?php if (!empty($p["imagen"])): ?>
-                <img
-                    src="<?= e($p["imagen"]) ?>"
-                    alt="<?= e($p["nombre"]) ?>"
-                    style="width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 10px;"
-                >
-            <?php endif; ?>
-
-            <h3><?= e($p["nombre"]) ?></h3>
-
-            <p><?= e($p["descripcion"]) ?></p>
-
-            <p>Categoría: <?= e($p["categoria"]) ?></p>
-
-            <p>Tipo: <?= e($p["tipo_publicacion"]) ?></p>
-
-            <p>Publicado por: <?= e($p["propietario"]) ?></p>
-
-            <?php if (
-                usuarioLogueado() &&
-                (int) $_SESSION["usuario"] !== (int) $p["id_usuario"]
-            ): ?>
-                <form action="solicitar.php" method="post">
-
-                    <input
-                        type="hidden"
-                        name="id_producto"
-                        value="<?= (int) $p["id_producto"] ?>"
-                    >
-
-                    <textarea
-                        name="mensaje"
-                        placeholder="Escribe tu solicitud"
-                        required
-                        minlength="5"
-                    ></textarea>
-
-                    <button type="submit">Solicitar objeto</button>
-
-                </form>
-            <?php endif; ?>
-
-        </article>
-
-    <?php endforeach; ?>
-
+            <form action="solicitar.php" method="post">
+                <input type="hidden" name="id_producto" id="modal-id-producto" value="">
+                <label for="modal-mensaje">Tu mensaje</label>
+                <textarea
+                    id="modal-mensaje"
+                    name="mensaje"
+                    placeholder="Cuéntale por qué te interesa este objeto"
+                    required
+                    minlength="5"
+                ></textarea>
+                <button type="submit">Enviar solicitud</button>
+            </form>
+        </div>
+    </div>
 </div>
+<?php endif; ?>
 
 <?php require __DIR__ . "/includes/footer.php"; ?>

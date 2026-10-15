@@ -64,14 +64,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 require __DIR__ . "/includes/header.php";
 ?>
 
-<section>
-    <h2>Crear cuenta</h2>
-
-    <p>Únete a Green Loop y dale una segunda vida a los objetos.</p>
-
-    <?php if ($mensaje !== ""): ?>
-        <p class="mensaje"><?= e($mensaje) ?></p>
-    <?php endif; ?>
+<section class="auth-wrap">
+    <div class="pagina-titulo">
+        <h2>Crear cuenta</h2>
+        <p>Únete a Green Loop y dale una segunda vida a los objetos.</p>
+    </div>
 
     <form method="post" action="registro.php">
         <label for="nombre">Nombre completo</label>

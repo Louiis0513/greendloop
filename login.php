@@ -33,12 +33,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 require __DIR__ . "/includes/header.php";
 ?>
 
-    <h2>Iniciar sesión</h2>
+<section class="auth-wrap">
+    <div class="pagina-titulo">
+        <h2>Iniciar sesión</h2>
+        <p>Entra para publicar, solicitar y negociar objetos.</p>
+    </div>
+
     <form method="post">
-        <input type="email" name="correo" placeholder="Correo electrónico" required>
-        <input type="password" name="clave" placeholder="Contraseña" required>
-        <button>Entrar</button>
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" name="correo" placeholder="Correo electrónico" required>
+
+        <label for="clave">Contraseña</label>
+        <input type="password" id="clave" name="clave" placeholder="Contraseña" required>
+
+        <button type="submit">Entrar</button>
     </form>
+
     <p>¿No tienes cuenta? <a href="registro.php">Créala aquí</a></p>
+</section>
 
 <?php require __DIR__ . "/includes/footer.php"; ?>

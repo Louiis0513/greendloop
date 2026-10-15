@@ -113,12 +113,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 require __DIR__ . "/includes/header.php";
 ?>
 
-<section>
-    <h2>Publicar un objeto</h2>
-    <p>Dale una segunda vida a algo que ya no utilizas.</p>
+<section class="auth-wrap form-ancho">
+    <div class="pagina-titulo">
+        <h2>Publicar un objeto</h2>
+        <p>Dale una segunda vida a algo que ya no utilizas.</p>
+    </div>
 
     <?php if ($error !== ""): ?>
-        <p class="mensaje"><?= e($error) ?></p>
+        <p class="mensaje mensaje-error"><?= e($error) ?></p>
     <?php endif; ?>
 
     <form action="publicar.php" method="post"
