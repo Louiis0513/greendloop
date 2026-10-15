@@ -1073,13 +1073,35 @@ form:not(.filtros-catalogo):not(.form-inline) > .boton {
     margin-top: 0;
 }
 
-.solicitud form:not(.form-inline) {
+.solicitud form:not(.form-inline),
+.solicitud .form-negociacion {
     margin-top: 16px;
     padding: 16px;
     background: rgba(8, 18, 13, 0.35);
     border: 1px solid var(--gl-border);
     border-radius: var(--gl-radius-sm);
     box-shadow: none;
+}
+
+.solicitud .form-negociacion h4 {
+    margin: 0 0 6px;
+}
+
+.form-ayuda {
+    margin: 0 0 14px;
+    color: var(--gl-muted);
+    font-size: 0.92rem;
+}
+
+.solicitud-decision {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gl-border);
+}
+
+.solicitud-decision > p {
+    margin: 0 0 10px;
+    font-weight: 600;
 }
 
 .solicitud form.form-inline {

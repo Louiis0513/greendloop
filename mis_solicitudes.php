@@ -11,6 +11,7 @@ $idUsuario = (int) $_SESSION["usuario"];
 $stmt = $mysqli->prepare(
     "SELECT s.*,
             p.nombre AS objeto,
+            p.tipo_publicacion,
             solicitante.telefono AS telefono_solicitante,
             propietario.telefono AS telefono_propietario
      FROM solicitudes s
@@ -55,13 +56,26 @@ require __DIR__ . "/includes/header.php";
                 "cancelada" => "Cancelada"
             ];
             $estadoTexto = $nombresEstados[$estadoActual] ?? "Sin estado";
+            $tipoPub = strtolower(trim($s["tipo_publicacion"] ?? $s["tipo_solicitud"] ?? ""));
+            if ($tipoPub === "intercambio" || $tipoPub === "trueque") {
+                $tipoTexto = "Intercambio / trueque";
+            } elseif ($tipoPub === "regalo") {
+                $tipoTexto = "Regalo";
+            } elseif ($tipoPub !== "") {
+                $tipoTexto = ucfirst($tipoPub);
+            } else {
+                $tipoTexto = "Solicitud";
+            }
             ?>
             <article class="solicitud">
                 <div class="solicitud-cabecera">
                     <h3><?= e($s["objeto"]) ?></h3>
-                    <span class="badge badge-estado es-<?= e($estadoActual) ?>">
-                        <?= e($estadoTexto) ?>
-                    </span>
+                    <div class="badges">
+                        <span class="badge badge-tipo"><?= e($tipoTexto) ?></span>
+                        <span class="badge badge-estado es-<?= e($estadoActual) ?>">
+                            <?= e($estadoTexto) ?>
+                        </span>
+                    </div>
                 </div>
 
                 <p><?= e($s["mensaje"]) ?></p>
@@ -92,33 +106,17 @@ require __DIR__ . "/includes/header.php";
                     </form>
                 <?php endif; ?>
 
-                <?php if (
-                    (int) $s["id_propietario"] === $idUsuario
-                    && $estadoActual === "pendiente"
-                ): ?>
-                    <p>¿Qué deseas hacer con esta solicitud?</p>
-                    <div class="acciones-fila">
-                        <form action="gestionar_solicitud.php" method="post" class="form-inline">
-                            <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
-                            <button type="submit" name="accion" value="aceptada">Aceptar</button>
-                        </form>
-                        <form action="gestionar_solicitud.php" method="post" class="form-inline">
-                            <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
-                            <button type="submit" name="accion" value="rechazada" class="secundario">Rechazar</button>
-                        </form>
-                    </div>
-                <?php endif; ?>
-
                 <?php if ($estadoActual === "pendiente" || $estadoActual === "aceptada"): ?>
-                    <form action="negociar.php" method="post">
+                    <form action="negociar.php" method="post" class="form-negociacion">
                         <h4>Detalles de negociación</h4>
+                        <p class="form-ayuda">Acuerda lugar, fecha y hora antes de aceptar o rechazar.</p>
                         <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
 
                         <label for="detalles-<?= (int) $s["id_solicitud"] ?>">Detalles</label>
                         <textarea
                             id="detalles-<?= (int) $s["id_solicitud"] ?>"
                             name="detalles"
-                            placeholder="Notas de la negociación"
+                            placeholder="Notas de la negociación (qué ofreces a cambio, condiciones, etc.)"
                         ><?= e($s["detalles_negociacion"] ?? "") ?></textarea>
 
                         <div class="solicitud-grid">
@@ -153,6 +151,25 @@ require __DIR__ . "/includes/header.php";
 
                         <button type="submit">Guardar negociación</button>
                     </form>
+                <?php endif; ?>
+
+                <?php if (
+                    (int) $s["id_propietario"] === $idUsuario
+                    && $estadoActual === "pendiente"
+                ): ?>
+                    <div class="solicitud-decision">
+                        <p>¿Qué deseas hacer con esta solicitud?</p>
+                        <div class="acciones-fila">
+                            <form action="gestionar_solicitud.php" method="post" class="form-inline">
+                                <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
+                                <button type="submit" name="accion" value="aceptada">Aceptar</button>
+                            </form>
+                            <form action="gestionar_solicitud.php" method="post" class="form-inline">
+                                <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
+                                <button type="submit" name="accion" value="rechazada" class="secundario">Rechazar</button>
+                            </form>
+                        </div>
+                    </div>
                 <?php endif; ?>
             </article>
         <?php endforeach; ?>
