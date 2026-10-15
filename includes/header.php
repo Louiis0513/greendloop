@@ -25,7 +25,11 @@ if ($mensaje === "") {
 
         <?php if (usuarioLogueado()): ?>
             <a href="mis_solicitudes.php" class="<?= claseActiva("mis_solicitudes.php") ?>">Mis solicitudes</a>
-            <a href="publicar.php" class="<?= claseActiva("publicar.php") ?>">Publicar</a>
+            <a href="perfil.php">Mi perfil</a>
+            <a href="mis_publicaciones.php"
+   class="<?= claseActiva("mis_publicaciones.php") ?>">
+    Mis publicaciones
+</a><a href="publicar.php" class="<?= claseActiva("publicar.php") ?>">Publicar</a>
         <?php endif; ?>
     </div>
 
