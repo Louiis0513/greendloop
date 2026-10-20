@@ -155,17 +155,31 @@ require __DIR__ . "/includes/header.php";
             <?php endforeach; ?>
         </select>
 
-        <label for="tipo_publicacion">Tipo de publicación</label>
-        <select id="tipo_publicacion" name="tipo_publicacion" required>
-            <option value="regalo"
-                <?= ($_POST["tipo_publicacion"] ?? "") === "regalo" ? "selected" : "" ?>>
-                Regalo
-            </option>
-            <option value="intercambio"
-                <?= ($_POST["tipo_publicacion"] ?? "intercambio") === "intercambio" ? "selected" : "" ?>>
-                Intercambio
-            </option>
-        </select>
+        <fieldset class="tipo-selector">
+            <legend>¿Cómo lo compartes?</legend>
+            <div class="tipo-opciones">
+                <label class="tipo-opcion es-regalo">
+                    <input
+                        type="radio"
+                        name="tipo_publicacion"
+                        value="regalo"
+                        <?= ($_POST["tipo_publicacion"] ?? "") === "regalo" ? "checked" : "" ?>
+                    >
+                    <span class="tipo-opcion-titulo">Regalo</span>
+                    <span class="tipo-opcion-texto">Lo entregas sin pedir nada a cambio.</span>
+                </label>
+                <label class="tipo-opcion es-trueque">
+                    <input
+                        type="radio"
+                        name="tipo_publicacion"
+                        value="intercambio"
+                        <?= ($_POST["tipo_publicacion"] ?? "intercambio") === "intercambio" ? "checked" : "" ?>
+                    >
+                    <span class="tipo-opcion-titulo">Trueque</span>
+                    <span class="tipo-opcion-texto">Quien lo pida te ofrecerá objetos suyos y tú eliges uno.</span>
+                </label>
+            </div>
+        </fieldset>
 
         <label for="imagen">Fotografía del objeto (opcional)</label>
         <input

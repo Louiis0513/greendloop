@@ -38,6 +38,57 @@
         });
     }
 
+    // --- Propuesta de trueque: elegir de 1 a 5 objetos propios ---
+    var ofrecidoChecks = document.querySelectorAll("[data-ofrecido-check]");
+    if (ofrecidoChecks.length > 0) {
+        var MAX_OFRECIDOS = 5;
+        var cuentaEl = document.querySelector("[data-ofrecidos-cuenta]");
+        var resumenEl = document.querySelector("[data-ofrecidos-resumen]");
+        var ayudaEl = document.querySelector("[data-ofrecidos-ayuda]");
+        var enviarBtn = document.querySelector("[data-ofrecidos-enviar]");
+        var ayudaOriginal = ayudaEl ? ayudaEl.textContent : "";
+
+        function actualizarOfrecidos(cambiado) {
+            var elegidos = document.querySelectorAll("[data-ofrecido-check]:checked");
+
+            if (elegidos.length > MAX_OFRECIDOS) {
+                if (cambiado) {
+                    cambiado.checked = false;
+                }
+                elegidos = document.querySelectorAll("[data-ofrecido-check]:checked");
+                if (ayudaEl) {
+                    ayudaEl.textContent = "Máximo 5 objetos. Quita uno antes de elegir otro.";
+                }
+            } else if (ayudaEl) {
+                ayudaEl.textContent = ayudaOriginal;
+            }
+
+            var n = elegidos.length;
+            if (cuentaEl) {
+                cuentaEl.textContent = n === 0
+                    ? "Elige de 1 a 5 objetos"
+                    : "Llevas " + n + " de 5 elegidos";
+            }
+            if (resumenEl) {
+                resumenEl.textContent = n === 0
+                    ? "Aún no elegiste ningún objeto."
+                    : n === 1
+                        ? "Ofreces 1 objeto. La otra persona lo acepta o rechaza."
+                        : "Ofreces " + n + " objetos. La otra persona elegirá uno.";
+            }
+            if (enviarBtn) {
+                enviarBtn.disabled = n === 0;
+            }
+        }
+
+        ofrecidoChecks.forEach(function (check) {
+            check.addEventListener("change", function () {
+                actualizarOfrecidos(check);
+            });
+        });
+        actualizarOfrecidos(null);
+    }
+
     var modal = document.getElementById("modal-solicitud");
     if (!modal) {
         return;
@@ -75,7 +126,7 @@
         if (metaEl) {
             metaEl.innerHTML =
                 '<span class="badge">' + escapeHtml(categoria) + "</span>" +
-                '<span class="badge badge-tipo">' + escapeHtml(tipo) + "</span>";
+                '<span class="badge badge-tipo es-regalo">' + escapeHtml(tipo) + "</span>";
         }
         if (autorEl) {
             autorEl.textContent = autor ? "Publicado por " + autor : "";

@@ -9,9 +9,16 @@ $resultado = $mysqli->query(
      JOIN usuarios u ON p.id_usuario = u.id_usuario
      WHERE p.disponible = 1
      ORDER BY p.fecha_publicacion DESC
-     LIMIT 3"
+     LIMIT 6"
 );
 $recientes = $resultado->fetch_all(MYSQLI_ASSOC);
+
+$stats = $mysqli->query(
+    "SELECT
+        (SELECT COUNT(*) FROM productos WHERE disponible = 1) AS objetos,
+        (SELECT COUNT(*) FROM usuarios) AS vecinos,
+        (SELECT COUNT(*) FROM solicitudes) AS trueques"
+)->fetch_assoc();
 
 require __DIR__ . "/includes/header.php";
 ?>
@@ -36,6 +43,21 @@ require __DIR__ . "/includes/header.php";
             </div>
         </div>
     </section>
+
+    <div class="inicio-stats" aria-label="Indicadores de la comunidad">
+        <div class="inicio-stat">
+            <strong><?= (int) ($stats["objetos"] ?? 0) ?></strong>
+            <span>Objetos disponibles</span>
+        </div>
+        <div class="inicio-stat">
+            <strong><?= (int) ($stats["vecinos"] ?? 0) ?></strong>
+            <span>Vecinos activos</span>
+        </div>
+        <div class="inicio-stat">
+            <strong><?= (int) ($stats["trueques"] ?? 0) ?></strong>
+            <span>Solicitudes / trueques</span>
+        </div>
+    </div>
 
     <section class="inicio-seccion">
         <h2>Así funciona</h2>
@@ -68,8 +90,8 @@ require __DIR__ . "/includes/header.php";
                 <p>Entregas el objeto sin pedir nada a cambio para que alguien más lo use.</p>
             </div>
             <div class="inicio-forma">
-                <h3>Intercambio</h3>
-                <p>Cambias tu objeto por otro que necesites.</p>
+                <h3>Trueque</h3>
+                <p>Ofreces hasta cinco objetos tuyos y la otra persona elige uno para hacer el cambio.</p>
             </div>
         </div>
     </section>
@@ -86,15 +108,15 @@ require __DIR__ . "/includes/header.php";
             <div class="productos">
                 <?php foreach ($recientes as $p): ?>
                     <article class="producto">
-                        <div class="producto-media">
+                        <div class="producto-media<?= empty($p["imagen"]) ? " sin-foto" : "" ?>">
                             <?php if (!empty($p["imagen"])): ?>
-                                <img src="<?= e($p["imagen"]) ?>" alt="<?= e($p["nombre"]) ?>">
+                                <img src="<?= e($p["imagen"]) ?>" alt="<?= e($p["nombre"]) ?>" loading="lazy">
                             <?php endif; ?>
                         </div>
                         <div class="producto-cuerpo">
                             <div class="badges">
                                 <span class="badge"><?= e($p["categoria"]) ?></span>
-                                <span class="badge badge-tipo"><?= e($p["tipo_publicacion"]) ?></span>
+                                <span class="badge badge-tipo <?= esTrueque($p["tipo_publicacion"]) ? "es-trueque" : "es-regalo" ?>"><?= e(tipoEtiqueta($p["tipo_publicacion"])) ?></span>
                             </div>
                             <h3><?= e($p["nombre"]) ?></h3>
                             <p class="producto-desc"><?= e($p["descripcion"]) ?></p>

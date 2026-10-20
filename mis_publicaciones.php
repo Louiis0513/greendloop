@@ -39,11 +39,12 @@ require __DIR__ . "/includes/header.php";
     <div class="productos">
         <?php foreach ($productos as $p): ?>
             <article class="producto">
-                <div class="producto-media">
+                <div class="producto-media<?= empty($p["imagen"]) ? " sin-foto" : "" ?>">
                     <?php if (!empty($p["imagen"])): ?>
                         <img
                             src="<?= e($p["imagen"]) ?>"
                             alt="<?= e($p["nombre"]) ?>"
+                            loading="lazy"
                         >
                     <?php endif; ?>
                 </div>

@@ -1,7 +1,7 @@
 </main>
 
 <footer>
-    <p>Green Loop — Ficha 32603009</p>
+    <p><strong>Green Loop</strong> — Ficha 3260309 · Intercambio y regalo comunitario</p>
     <p>Sebastián Camilo Giraldo Velasquez, Natalia Linares Vergara,
     Laura Camila Castro Caballero y Joshua González Guzmán</p>
 </footer>

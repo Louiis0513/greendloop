@@ -9,6 +9,9 @@ if ($mensaje === "") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Green Loop: regala o intercambia objetos usados con tu comunidad. Sin dinero, sin desperdicio.">
+    <meta name="theme-color" content="#07140f">
+    <link rel="icon" type="image/jpeg" href="img/Logo.jpeg">
     <title>Green Loop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +21,10 @@ if ($mensaje === "") {
 <body class="<?= e($claseBody ?? "") ?>">
 
 <nav class="nav" aria-label="Principal">
-    <a href="index.php" class="logo">Green Loop</a>
+    <a href="index.php" class="logo">
+        <img src="img/Logo.jpeg" alt="" width="36" height="36">
+        <span>Green Loop</span>
+    </a>
 
     <button
         type="button"
@@ -65,5 +71,5 @@ if ($mensaje === "") {
 <main>
 
 <?php if ($mensaje !== ""): ?>
-    <p class="mensaje"><?= e($mensaje) ?></p>
+    <p class="mensaje <?= e($claseMensaje ?? "") ?>"><?= e($mensaje) ?></p>
 <?php endif; ?>

@@ -96,7 +96,7 @@ require __DIR__ . "/includes/header.php";
         <select name="tipo" id="tipo">
             <option value="">Todos</option>
             <option value="regalo" <?= $tipo === "regalo" ? "selected" : "" ?>>Regalo</option>
-            <option value="intercambio" <?= $tipo === "intercambio" ? "selected" : "" ?>>Intercambio</option>
+            <option value="intercambio" <?= $tipo === "intercambio" ? "selected" : "" ?>>Trueque</option>
         </select>
     </div>
 
@@ -158,24 +158,32 @@ require __DIR__ . "/includes/header.php";
             $puedeSolicitar = $logueado && !$esPropio;
             ?>
             <article class="producto">
-                <div class="producto-media">
+                <div class="producto-media<?= empty($p["imagen"]) ? " sin-foto" : "" ?>">
                     <?php if (!empty($p["imagen"])): ?>
                         <img
                             src="<?= e($p["imagen"]) ?>"
                             alt="<?= e($p["nombre"]) ?>"
+                            loading="lazy"
                         >
                     <?php endif; ?>
                 </div>
                 <div class="producto-cuerpo">
                     <div class="badges">
                         <span class="badge"><?= e($p["categoria"]) ?></span>
-                        <span class="badge badge-tipo"><?= e($p["tipo_publicacion"]) ?></span>
+                        <span class="badge badge-tipo <?= esTrueque($p["tipo_publicacion"]) ? "es-trueque" : "es-regalo" ?>"><?= e(tipoEtiqueta($p["tipo_publicacion"])) ?></span>
                     </div>
                     <h3><?= e($p["nombre"]) ?></h3>
                     <p class="producto-desc"><?= e($p["descripcion"]) ?></p>
                     <p class="producto-autor">Publicado por <?= e($p["propietario"]) ?></p>
 
-                    <?php if ($puedeSolicitar): ?>
+                    <?php if ($puedeSolicitar && esTrueque($p["tipo_publicacion"])): ?>
+                        <a
+                            href="solicitar_producto.php?id_producto=<?= (int) $p["id_producto"] ?>"
+                            class="boton"
+                        >
+                            Proponer trueque
+                        </a>
+                    <?php elseif ($puedeSolicitar): ?>
                         <button
                             type="button"
                             class="boton"
@@ -184,11 +192,11 @@ require __DIR__ . "/includes/header.php";
                             data-nombre="<?= e($p["nombre"]) ?>"
                             data-descripcion="<?= e($p["descripcion"]) ?>"
                             data-categoria="<?= e($p["categoria"]) ?>"
-                            data-tipo="<?= e($p["tipo_publicacion"]) ?>"
+                            data-tipo="<?= e(tipoEtiqueta($p["tipo_publicacion"])) ?>"
                             data-autor="<?= e($p["propietario"]) ?>"
                             data-imagen="<?= e($p["imagen"] ?? "") ?>"
                         >
-                            Solicitar objeto
+                            Solicitar regalo
                         </button>
                     <?php elseif ($esPropio): ?>
                         <a href="mis_publicaciones.php" class="boton secundario">Tu publicación</a>

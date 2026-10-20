@@ -23,6 +23,17 @@ function soloVisitantes() {
     }
 }
 
+// Etiqueta visible del tipo: en BD se guarda "intercambio", en pantalla "Trueque".
+function tipoEtiqueta($tipo) {
+    $tipo = strtolower(trim((string) $tipo));
+    return ($tipo === "intercambio" || $tipo === "trueque") ? "Trueque" : "Regalo";
+}
+
+function esTrueque($tipo) {
+    $tipo = strtolower(trim((string) $tipo));
+    return $tipo === "intercambio" || $tipo === "trueque";
+}
+
 function claseActiva($archivo) {
     return basename($_SERVER["PHP_SELF"]) === $archivo ? "activo" : "";
 }
