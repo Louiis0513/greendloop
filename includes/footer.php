@@ -6,6 +6,6 @@
     Laura Camila Castro Caballero y Joshua González Guzmán</p>
 </footer>
 
-<script src="js/app.js" defer></script>
+<script src="js/app.js?v=<?= (int) @filemtime(__DIR__ . "/../js/app.js") ?>" defer></script>
 </body>
 </html>

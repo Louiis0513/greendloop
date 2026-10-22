@@ -17,13 +17,17 @@ pantalla nueva nazca del mismo sistema.
 
 | Token | Valor | Uso |
 |---|---|---|
-| `--gl-bg` | `#07140f` | Fondo bosque |
-| `--gl-surface-solid` | `#14281e` | Superficies |
-| `--gl-accent` | `#2f9e63` | Acción principal |
-| `--gl-accent-bright` | `#5fd98e` | Acento lima, foco, seleccionado |
-| `--gl-text` | `#f0faf3` | Texto |
-| `--gl-muted` | `#94b5a4` | Texto secundario |
-| Terracota | `#d4895a` | Solo para **Trueque** |
+| `--gl-bg` | `#0a0e0c` | Fondo casi neutro, apenas verdoso |
+| `--gl-surface-solid` | `#161c18` | Superficies neutras |
+| `--gl-accent` | `#2f9e63` | Solo acción principal, activo y seleccionado |
+| `--gl-accent-bright` | `#5fd98e` | Solo foco y seleccionado |
+| `--gl-text` | `#eef3f0` | Texto y titulares |
+| `--gl-muted` | `#99a49c` | Texto secundario neutro |
+| Terracota | `#d4895a` | Solo para **Trueque** y avisos |
+
+Regla 90/10: el fondo, los bordes y el texto son neutros; el verde se
+reserva para la única acción principal de cada vista. Nada de
+degradados lima en botones: verde sólido con texto blanco.
 
 Regla de tipos: **Regalo = lima**, **Trueque = terracota**. Nunca usar
 los dos acentos mezclados en el mismo componente.
@@ -46,9 +50,15 @@ contadores en la misma fuente sin adornos.
   radio real, `:has(:checked)` para el estado y ayuda de una línea.
 - Trueque en 3 pasos: lo que quieres → lo que ofreces (1 a 5 tarjetas
   seleccionables) → mensaje. Botón de envío fijo abajo en móvil.
-- En Mis solicitudes, el propietario elige con radios sobre las mismas
+- Navbar: enlaces de texto con subrayado en el activo; `Publicar` es el
+  único botón sólido; la cuenta vive en un avatar con menú desplegable
+  (perfil, publicaciones, solicitudes con contador de pendientes, salir).
+- En Mis solicitudes, cada tarjeta nace colapsada: foto, estado,
+  contraparte y "Siguiente paso". Los formularios se abren solo con su
+  acción — en pendiente se decide (elegir/aceptar/rechazar); en aceptada
+  se acuerda el encuentro. El propietario elige con radios sobre las
   tarjetas ofrecidas; el elegido queda marcado "Elegido" y el resumen
-  muestra `objeto ⇄ objeto`.
+  muestra `objeto ⇄ objeto`. "En negociación" = solo aceptadas.
 
 ## Responsive
 

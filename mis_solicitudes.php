@@ -76,8 +76,8 @@ foreach ($todas as $s) {
     if ((int) $s["id_solicitante"] === $idUsuario) {
         $conteos["enviadas"]++;
     }
-    $estado = strtolower(trim($s["estado"] ?? ""));
-    if ($estado === "pendiente" || $estado === "aceptada") {
+    // "En negociación" es solo lo ya aceptado: falta acordar el encuentro.
+    if (strtolower(trim($s["estado"] ?? "")) === "aceptada") {
         $conteos["negociacion"]++;
     }
 }
@@ -91,7 +91,7 @@ $solicitudes = array_values(array_filter($todas, function ($s) use ($filtro, $id
         return (int) $s["id_solicitante"] === $idUsuario;
     }
     if ($filtro === "negociacion") {
-        return $estado === "pendiente" || $estado === "aceptada";
+        return $estado === "aceptada";
     }
     return true;
 }));
@@ -101,7 +101,7 @@ require __DIR__ . "/includes/header.php";
 
 <div class="pagina-titulo">
     <h2>Solicitudes y negociaciones</h2>
-    <p>Gestiona pedidos, aceptaciones y detalles de encuentro.</p>
+    <p>Primero decide las solicitudes pendientes. Cuando estén aceptadas, acuerda el encuentro.</p>
 </div>
 
 <nav class="tabs-flujo" aria-label="Filtrar solicitudes">
@@ -129,6 +129,7 @@ require __DIR__ . "/includes/header.php";
     <div class="lista-solicitudes">
         <?php foreach ($solicitudes as $s): ?>
             <?php
+            $idSolicitud = (int) $s["id_solicitud"];
             $estadoActual = strtolower(trim($s["estado"] ?? ""));
             $nombresEstados = [
                 "pendiente" => "Pendiente",
@@ -142,193 +143,241 @@ require __DIR__ . "/includes/header.php";
             $tipoTexto = $tipoPub !== "" ? tipoEtiqueta($tipoPub) : "Solicitud";
             $esPropietario = (int) $s["id_propietario"] === $idUsuario;
             $rolTexto = $esPropietario ? "Te la enviaron" : "La enviaste tú";
+            $contraparte = $esPropietario ? $s["nombre_solicitante"] : $s["nombre_propietario"];
+
+            $ofrecidosSolicitud = $esTruequeSolicitud
+                ? ($ofrecimientosPorSolicitud[$idSolicitud] ?? [])
+                : [];
+            $elegidoSolicitud = null;
+            foreach ($ofrecidosSolicitud as $of) {
+                if ((int) $of["elegido"] === 1) {
+                    $elegidoSolicitud = $of;
+                }
+            }
+            $puedeElegir = $esPropietario
+                && $estadoActual === "pendiente"
+                && count($ofrecidosSolicitud) > 0;
+
+            $tieneEncuentro = trim((string) ($s["lugar_encuentro"] ?? "")) !== ""
+                || !empty($s["fecha_encuentro"])
+                || !empty($s["hora_encuentro"])
+                || trim((string) ($s["detalles_negociacion"] ?? "")) !== "";
+
+            $resumenEncuentro = [];
+            if (trim((string) ($s["lugar_encuentro"] ?? "")) !== "") {
+                $resumenEncuentro[] = $s["lugar_encuentro"];
+            }
+            if (!empty($s["fecha_encuentro"])) {
+                $tsFecha = strtotime((string) $s["fecha_encuentro"]);
+                $resumenEncuentro[] = $tsFecha ? date("d/m/Y", $tsFecha) : $s["fecha_encuentro"];
+            }
+            if (!empty($s["hora_encuentro"])) {
+                $resumenEncuentro[] = substr((string) $s["hora_encuentro"], 0, 5);
+            }
+
+            // Siguiente paso y acción principal, según estado y rol.
+            $pasoTexto = "Esta solicitud ya se cerró.";
+            $toggleAbrir = "";
+            $mostrarDetalle = false;
+
+            if ($estadoActual === "pendiente" && $esPropietario && $esTruequeSolicitud && $puedeElegir) {
+                $pasoTexto = "Te ofrecen " . count($ofrecidosSolicitud)
+                    . (count($ofrecidosSolicitud) === 1 ? " objeto" : " objetos")
+                    . ". Elige uno para cerrar el trueque.";
+                $toggleAbrir = "Elegir objeto";
+                $mostrarDetalle = true;
+            } elseif ($estadoActual === "pendiente" && $esPropietario && $esTruequeSolicitud) {
+                $pasoTexto = "No trae objetos ofrecidos. Puedes rechazarla y pedir que la envíen de nuevo.";
+            } elseif ($estadoActual === "pendiente" && $esPropietario) {
+                $pasoTexto = "Revisa el mensaje y decide si entregas este objeto.";
+            } elseif ($estadoActual === "pendiente") {
+                $pasoTexto = "Esperando respuesta de " . $contraparte . ".";
+                if (count($ofrecidosSolicitud) > 0) {
+                    $toggleAbrir = "Ver objetos ofrecidos";
+                    $mostrarDetalle = true;
+                }
+            } elseif ($estadoActual === "aceptada") {
+                $pasoTexto = $tieneEncuentro
+                    ? "Encuentro en curso de acuerdo. Edítalo solo si cambia algo."
+                    : "Ya está aceptada. Falta acordar lugar, fecha y hora del encuentro.";
+                $toggleAbrir = $tieneEncuentro ? "Editar encuentro" : "Acordar encuentro";
+                $mostrarDetalle = true;
+            }
             ?>
             <article class="solicitud">
-                <div class="solicitud-cabecera">
-                    <h3><?= e($s["objeto"]) ?></h3>
-                    <div class="badges">
-                        <span class="badge badge-tipo <?= $esTruequeSolicitud ? "es-trueque" : "es-regalo" ?>"><?= e($tipoTexto) ?></span>
-                        <span class="badge badge-estado es-<?= e($estadoActual) ?>">
-                            <?= e($estadoTexto) ?>
-                        </span>
-                    </div>
-                </div>
+                <div class="solicitud-resumen">
+                    <?php if (!empty($s["imagen"])): ?>
+                        <img class="solicitud-thumb" src="<?= e($s["imagen"]) ?>" alt="" loading="lazy">
+                    <?php else: ?>
+                        <span class="solicitud-thumb solicitud-thumb-vacia" aria-hidden="true">Sin foto</span>
+                    <?php endif; ?>
 
-                <div class="solicitud-meta">
-                    <span class="solicitud-rol"><?= e($rolTexto) ?></span>
-                    <span>
-                        <?= $esPropietario
-                            ? "De " . e($s["nombre_solicitante"])
-                            : "Para " . e($s["nombre_propietario"]) ?>
-                    </span>
-                </div>
+                    <div class="solicitud-resumen-info">
+                        <div class="solicitud-cabecera">
+                            <h3><?= e($s["objeto"]) ?></h3>
+                            <div class="badges">
+                                <span class="badge badge-tipo <?= $esTruequeSolicitud ? "es-trueque" : "es-regalo" ?>"><?= e($tipoTexto) ?></span>
+                                <span class="badge badge-estado es-<?= e($estadoActual) ?>"><?= e($estadoTexto) ?></span>
+                            </div>
+                        </div>
 
-                <p><?= e($s["mensaje"]) ?></p>
+                        <div class="solicitud-meta">
+                            <span class="solicitud-rol"><?= e($rolTexto) ?></span>
+                            <span><?= $esPropietario ? "De " : "Para " ?><?= e($contraparte) ?></span>
+                            <?php if (!empty($s["fecha_solicitud"])): ?>
+                                <span><?= e(date("d/m/Y", strtotime((string) $s["fecha_solicitud"]))) ?></span>
+                            <?php endif; ?>
+                        </div>
 
-                <?php if ($esTruequeSolicitud): ?>
-                    <?php
-                    $ofrecidosSolicitud = $ofrecimientosPorSolicitud[(int) $s["id_solicitud"]] ?? [];
-                    $elegidoSolicitud = null;
-                    foreach ($ofrecidosSolicitud as $of) {
-                        if ((int) $of["elegido"] === 1) {
-                            $elegidoSolicitud = $of;
-                        }
-                    }
-                    $puedeElegir = $esPropietario
-                        && $estadoActual === "pendiente"
-                        && count($ofrecidosSolicitud) > 0;
-                    ?>
-                    <section class="trueque-ofrecidos" aria-label="Objetos ofrecidos en este trueque">
+                        <?php if (trim((string) ($s["mensaje"] ?? "")) !== ""): ?>
+                            <p class="solicitud-mensaje"><?= e($s["mensaje"]) ?></p>
+                        <?php endif; ?>
+
                         <?php if ($elegidoSolicitud && $estadoActual === "aceptada"): ?>
-                            <h4>Trueque cerrado</h4>
-                            <p class="trueque-resumen">
+                            <p class="trueque-resumen solicitud-intercambio">
                                 <strong><?= e($s["objeto"]) ?></strong>
                                 <span aria-hidden="true">⇄</span>
                                 <strong><?= e($elegidoSolicitud["nombre"]) ?></strong>
                             </p>
-                        <?php elseif ($puedeElegir): ?>
-                            <h4>Objetos que te ofrecen · elige uno</h4>
-                        <?php else: ?>
-                            <h4>Objetos ofrecidos en este trueque</h4>
                         <?php endif; ?>
 
-                        <?php if (count($ofrecidosSolicitud) === 0): ?>
-                            <p class="form-ayuda">Esta solicitud no trae objetos ofrecidos. Puedes rechazarla y pedir que la envíen de nuevo desde el catálogo.</p>
-                        <?php else: ?>
-                            <?php if ($puedeElegir): ?>
-                                <form action="gestionar_solicitud.php" method="post" class="form-elegir-trueque">
-                                    <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
-                            <?php endif; ?>
-
-                            <div class="ofrecidos-grid es-mini">
-                                <?php foreach ($ofrecidosSolicitud as $of): ?>
-                                    <?php $esElegido = (int) $of["elegido"] === 1; ?>
-                                    <<?= $puedeElegir ? "label" : "div" ?> class="ofrecido-card es-mini<?= $esElegido ? " es-elegido" : "" ?>">
-                                        <?php if ($puedeElegir): ?>
-                                            <input
-                                                type="radio"
-                                                name="id_producto_ofrecido"
-                                                value="<?= (int) $of["id_producto"] ?>"
-                                                required
-                                            >
-                                        <?php endif; ?>
-                                        <span class="ofrecido-media<?= empty($of["imagen"]) ? " sin-foto" : "" ?>">
-                                            <?php if (!empty($of["imagen"])): ?>
-                                                <img src="<?= e($of["imagen"]) ?>" alt="" loading="lazy">
-                                            <?php endif; ?>
-                                        </span>
-                                        <span class="ofrecido-info">
-                                            <strong><?= e($of["nombre"]) ?></strong>
-                                            <span class="badge"><?= e($of["categoria"]) ?></span>
-                                        </span>
-                                        <?php if ($esElegido): ?>
-                                            <span class="ofrecido-check">Elegido</span>
-                                        <?php elseif ($puedeElegir): ?>
-                                            <span class="ofrecido-check" aria-hidden="true">Elegir este</span>
-                                        <?php endif; ?>
-                                    </<?= $puedeElegir ? "label" : "div" ?>>
-                                <?php endforeach; ?>
-                            </div>
-
-                            <?php if ($puedeElegir): ?>
-                                    <button type="submit" name="accion" value="aceptar_trueque">Aceptar trueque con el objeto elegido</button>
-                                </form>
-                            <?php endif; ?>
+                        <?php if ($estadoActual === "aceptada" && count($resumenEncuentro) > 0): ?>
+                            <p class="solicitud-encuentro">Encuentro: <strong><?= e(implode(" · ", $resumenEncuentro)) ?></strong></p>
                         <?php endif; ?>
-                    </section>
-                <?php endif; ?>
 
-                <?php if ($estadoActual === "aceptada"): ?>
-                    <?php if ((int) $s["id_solicitante"] === $idUsuario): ?>
-                        <p class="contacto-box">
-                            Teléfono del propietario:
-                            <strong><?= e($s["telefono_propietario"] ?: "No registrado") ?></strong>
-                        </p>
-                    <?php else: ?>
-                        <p class="contacto-box">
-                            Teléfono de quien solicitó:
-                            <strong><?= e($s["telefono_solicitante"] ?: "No registrado") ?></strong>
-                        </p>
+                        <p class="solicitud-paso"><span>Siguiente paso:</span> <?= e($pasoTexto) ?></p>
+                    </div>
+                </div>
+
+                <div class="solicitud-acciones">
+                    <?php if ($estadoActual === "pendiente" && $esPropietario && !$esTruequeSolicitud): ?>
+                        <form action="gestionar_solicitud.php" method="post" class="form-inline">
+                            <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+                            <button type="submit" name="accion" value="aceptada">Aceptar</button>
+                        </form>
+                        <form action="gestionar_solicitud.php" method="post" class="form-inline">
+                            <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+                            <button type="submit" name="accion" value="rechazada" class="secundario">Rechazar</button>
+                        </form>
+                    <?php elseif ($estadoActual === "pendiente" && $esPropietario && $esTruequeSolicitud && !$puedeElegir): ?>
+                        <form action="gestionar_solicitud.php" method="post" class="form-inline">
+                            <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+                            <button type="submit" name="accion" value="rechazada" class="secundario">Rechazar</button>
+                        </form>
                     <?php endif; ?>
 
-                    <form
-                        action="gestionar_solicitud.php"
-                        method="post"
-                        class="form-inline"
-                        onsubmit="return confirm('¿Seguro que deseas cancelar esta negociación?');"
-                    >
-                        <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
-                        <button type="submit" name="accion" value="cancelada" class="peligro">
-                            Cancelar negociación
-                        </button>
-                    </form>
-                <?php endif; ?>
+                    <?php if ($mostrarDetalle): ?>
+                        <button
+                            type="button"
+                            class="solicitud-toggle <?= $estadoActual === "aceptada" || $puedeElegir ? "" : "secundario" ?>"
+                            data-solicitud-toggle
+                            aria-expanded="false"
+                            aria-controls="detalle-<?= $idSolicitud ?>"
+                            data-texto-abrir="<?= e($toggleAbrir) ?>"
+                            data-texto-cerrar="Ocultar"
+                        ><?= e($toggleAbrir) ?></button>
+                    <?php endif; ?>
+                </div>
 
-                <?php if ($estadoActual === "pendiente" || $estadoActual === "aceptada"): ?>
-                    <form action="negociar.php" method="post" class="form-negociacion">
-                        <h4>Detalles de negociación</h4>
-                        <p class="form-ayuda">Acuerda lugar, fecha y hora antes de aceptar o rechazar.</p>
-                        <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
+                <?php if ($mostrarDetalle): ?>
+                    <div class="solicitud-detalle" id="detalle-<?= $idSolicitud ?>">
+                        <?php if ($esTruequeSolicitud): ?>
+                            <section class="trueque-ofrecidos" aria-label="Objetos ofrecidos en este trueque">
+                                <h4><?= $puedeElegir ? "Objetos que te ofrecen · elige uno" : "Objetos ofrecidos en este trueque" ?></h4>
 
-                        <label for="detalles-<?= (int) $s["id_solicitud"] ?>">Detalles</label>
-                        <textarea
-                            id="detalles-<?= (int) $s["id_solicitud"] ?>"
-                            name="detalles"
-                            placeholder="Notas de la negociación (qué ofreces a cambio, condiciones, etc.)"
-                        ><?= e($s["detalles_negociacion"] ?? "") ?></textarea>
+                                <?php if (count($ofrecidosSolicitud) === 0): ?>
+                                    <p class="form-ayuda">Esta solicitud no trae objetos ofrecidos.</p>
+                                <?php else: ?>
+                                    <?php if ($puedeElegir): ?>
+                                        <form action="gestionar_solicitud.php" method="post" class="form-elegir-trueque">
+                                            <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+                                    <?php endif; ?>
 
-                        <div class="solicitud-grid">
-                            <div>
-                                <label for="lugar-<?= (int) $s["id_solicitud"] ?>">Lugar de encuentro</label>
-                                <input
-                                    id="lugar-<?= (int) $s["id_solicitud"] ?>"
-                                    name="lugar"
-                                    placeholder="Lugar de encuentro"
-                                    value="<?= e($s["lugar_encuentro"] ?? "") ?>"
-                                >
-                            </div>
-                            <div>
-                                <label for="fecha-<?= (int) $s["id_solicitud"] ?>">Fecha</label>
-                                <input
-                                    type="date"
-                                    id="fecha-<?= (int) $s["id_solicitud"] ?>"
-                                    name="fecha"
-                                    value="<?= e($s["fecha_encuentro"] ?? "") ?>"
-                                >
-                            </div>
-                            <div>
-                                <label for="hora-<?= (int) $s["id_solicitud"] ?>">Hora</label>
-                                <input
-                                    type="time"
-                                    id="hora-<?= (int) $s["id_solicitud"] ?>"
-                                    name="hora"
-                                    value="<?= e($s["hora_encuentro"] ?? "") ?>"
-                                >
-                            </div>
-                        </div>
+                                    <div class="ofrecidos-grid es-mini">
+                                        <?php foreach ($ofrecidosSolicitud as $of): ?>
+                                            <?php $esElegido = (int) $of["elegido"] === 1; ?>
+                                            <?php if ($puedeElegir): ?>
+                                                <label class="ofrecido-card es-mini<?= $esElegido ? " es-elegido" : "" ?>">
+                                                    <input type="radio" name="id_producto_ofrecido" value="<?= (int) $of["id_producto"] ?>" required>
+                                            <?php else: ?>
+                                                <div class="ofrecido-card es-mini<?= $esElegido ? " es-elegido" : "" ?>">
+                                            <?php endif; ?>
+                                                <span class="ofrecido-media<?= empty($of["imagen"]) ? " sin-foto" : "" ?>">
+                                                    <?php if (!empty($of["imagen"])): ?>
+                                                        <img src="<?= e($of["imagen"]) ?>" alt="" loading="lazy">
+                                                    <?php endif; ?>
+                                                </span>
+                                                <span class="ofrecido-info">
+                                                    <strong><?= e($of["nombre"]) ?></strong>
+                                                    <span class="badge"><?= e($of["categoria"]) ?></span>
+                                                </span>
+                                                <?php if ($esElegido): ?>
+                                                    <span class="ofrecido-check">Elegido</span>
+                                                <?php elseif ($puedeElegir): ?>
+                                                    <span class="ofrecido-check" aria-hidden="true">Elegir este</span>
+                                                <?php endif; ?>
+                                            <?= $puedeElegir ? "</label>" : "</div>" ?>
+                                        <?php endforeach; ?>
+                                    </div>
 
-                        <button type="submit">Guardar negociación</button>
-                    </form>
-                <?php endif; ?>
+                                    <?php if ($puedeElegir): ?>
+                                            <button type="submit" name="accion" value="aceptar_trueque">Aceptar trueque con el objeto elegido</button>
+                                        </form>
+                                        <form action="gestionar_solicitud.php" method="post" class="form-inline solicitud-rechazar">
+                                            <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+                                            <button type="submit" name="accion" value="rechazada" class="secundario">Ninguno me convence · Rechazar</button>
+                                        </form>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </section>
+                        <?php endif; ?>
 
-                <?php if (
-                    (int) $s["id_propietario"] === $idUsuario
-                    && $estadoActual === "pendiente"
-                ): ?>
-                    <div class="solicitud-decision">
-                        <p><?= $esTruequeSolicitud ? "¿No te convence ninguno? Puedes rechazar la propuesta." : "¿Qué deseas hacer con esta solicitud?" ?></p>
-                        <div class="acciones-fila">
-                            <?php if (!$esTruequeSolicitud): ?>
-                            <form action="gestionar_solicitud.php" method="post" class="form-inline">
-                                <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
-                                <button type="submit" name="accion" value="aceptada">Aceptar</button>
+                        <?php if ($estadoActual === "aceptada"): ?>
+                            <p class="contacto-box">
+                                <?= $esPropietario ? "Teléfono de quien solicitó:" : "Teléfono del propietario:" ?>
+                                <strong><?= e($esPropietario ? ($s["telefono_solicitante"] ?: "No registrado") : ($s["telefono_propietario"] ?: "No registrado")) ?></strong>
+                            </p>
+
+                            <form action="negociar.php" method="post" class="form-negociacion">
+                                <h4>Detalles del encuentro</h4>
+                                <p class="form-ayuda">Acuerda lugar, fecha y hora con la otra persona.</p>
+                                <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+
+                                <label for="detalles-<?= $idSolicitud ?>">Detalles</label>
+                                <textarea
+                                    id="detalles-<?= $idSolicitud ?>"
+                                    name="detalles"
+                                    placeholder="Notas del encuentro (punto de referencia, condiciones, etc.)"
+                                ><?= e($s["detalles_negociacion"] ?? "") ?></textarea>
+
+                                <div class="solicitud-grid">
+                                    <div>
+                                        <label for="lugar-<?= $idSolicitud ?>">Lugar de encuentro</label>
+                                        <input id="lugar-<?= $idSolicitud ?>" name="lugar" placeholder="Lugar de encuentro" value="<?= e($s["lugar_encuentro"] ?? "") ?>">
+                                    </div>
+                                    <div>
+                                        <label for="fecha-<?= $idSolicitud ?>">Fecha</label>
+                                        <input type="date" id="fecha-<?= $idSolicitud ?>" name="fecha" value="<?= e($s["fecha_encuentro"] ?? "") ?>">
+                                    </div>
+                                    <div>
+                                        <label for="hora-<?= $idSolicitud ?>">Hora</label>
+                                        <input type="time" id="hora-<?= $idSolicitud ?>" name="hora" value="<?= e($s["hora_encuentro"] ?? "") ?>">
+                                    </div>
+                                </div>
+
+                                <button type="submit">Guardar encuentro</button>
                             </form>
-                            <?php endif; ?>
-                            <form action="gestionar_solicitud.php" method="post" class="form-inline">
-                                <input type="hidden" name="id_solicitud" value="<?= (int) $s["id_solicitud"] ?>">
-                                <button type="submit" name="accion" value="rechazada" class="secundario">Rechazar</button>
+
+                            <form
+                                action="gestionar_solicitud.php"
+                                method="post"
+                                class="form-inline solicitud-cancelar"
+                                onsubmit="return confirm('¿Seguro que deseas cancelar esta negociación?');"
+                            >
+                                <input type="hidden" name="id_solicitud" value="<?= $idSolicitud ?>">
+                                <button type="submit" name="accion" value="cancelada" class="peligro">Cancelar negociación</button>
                             </form>
-                        </div>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </article>

@@ -38,6 +38,48 @@
         });
     }
 
+    // --- Menú de cuenta del navbar ---
+    var perfilWrap = document.getElementById("nav-perfil");
+    var perfilBtn = document.getElementById("nav-perfil-btn");
+    if (perfilWrap && perfilBtn) {
+        function setPerfilOpen(open) {
+            perfilWrap.classList.toggle("is-open", open);
+            perfilBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+
+        perfilBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            setPerfilOpen(!perfilWrap.classList.contains("is-open"));
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!perfilWrap.contains(event.target)) {
+                setPerfilOpen(false);
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                setPerfilOpen(false);
+            }
+        });
+    }
+
+    // --- Solicitudes: desplegar detalle / formularios bajo demanda ---
+    document.querySelectorAll("[data-solicitud-toggle]").forEach(function (btn) {
+        var detalle = document.getElementById(btn.getAttribute("aria-controls"));
+        if (!detalle) {
+            return;
+        }
+        btn.addEventListener("click", function () {
+            var abierto = detalle.classList.toggle("is-open");
+            btn.setAttribute("aria-expanded", abierto ? "true" : "false");
+            btn.textContent = abierto
+                ? btn.getAttribute("data-texto-cerrar")
+                : btn.getAttribute("data-texto-abrir");
+        });
+    });
+
     // --- Propuesta de trueque: elegir de 1 a 5 objetos propios ---
     var ofrecidoChecks = document.querySelectorAll("[data-ofrecido-check]");
     if (ofrecidoChecks.length > 0) {
