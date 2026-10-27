@@ -3,22 +3,10 @@ session_start();
 require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
-$resultado = $mysqli->query(
-    "SELECT p.*, u.nombre AS propietario
-     FROM productos p
-     JOIN usuarios u ON p.id_usuario = u.id_usuario
-     WHERE p.disponible = 1
-     ORDER BY p.fecha_publicacion DESC
-     LIMIT 6"
-);
-$recientes = $resultado->fetch_all(MYSQLI_ASSOC);
+enviarHeadersCache('publico');
 
-$stats = $mysqli->query(
-    "SELECT
-        (SELECT COUNT(*) FROM productos WHERE disponible = 1) AS objetos,
-        (SELECT COUNT(*) FROM usuarios) AS vecinos,
-        (SELECT COUNT(*) FROM solicitudes) AS trueques"
-)->fetch_assoc();
+$recientes = obtenerRecientes($mysqli, 6);
+$stats = obtenerStats($mysqli);
 
 require __DIR__ . "/includes/header.php";
 ?>

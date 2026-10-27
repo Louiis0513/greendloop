@@ -4,63 +4,18 @@ session_start();
 require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
+enviarHeadersCache('publico');
+
 $busqueda = trim($_GET["buscar"] ?? "");
 $tipo = trim($_GET["tipo"] ?? "");
 $categoria = trim($_GET["categoria"] ?? "");
 
-$sql = "SELECT p.*, u.nombre AS propietario
-        FROM productos p
-        JOIN usuarios u ON p.id_usuario = u.id_usuario
-        WHERE p.disponible = 1";
+$productos = obtenerCatalogo($mysqli, $tipo, $categoria, $busqueda);
 
-$condiciones = [];
-$parametros = [];
-$tipos = "";
-
-if ($busqueda !== "") {
-    $condiciones[] = "(p.nombre LIKE ? OR p.descripcion LIKE ?)";
-    $parametros[] = "%" . $busqueda . "%";
-    $parametros[] = "%" . $busqueda . "%";
-    $tipos .= "ss";
+$categorias = [];
+foreach (categoriasCatalogo() as $nombreCat) {
+    $categorias[] = ["categoria" => $nombreCat];
 }
-
-if ($tipo === "regalo") {
-    $condiciones[] = "LOWER(p.tipo_publicacion) IN ('regalo')";
-} elseif ($tipo === "intercambio") {
-    $condiciones[] = "LOWER(p.tipo_publicacion) IN ('intercambio', 'trueque')";
-}
-
-if ($categoria !== "") {
-    $condiciones[] = "p.categoria = ?";
-    $parametros[] = $categoria;
-    $tipos .= "s";
-}
-
-if (count($condiciones) > 0) {
-    $sql .= " AND " . implode(" AND ", $condiciones);
-}
-
-$sql .= " ORDER BY p.fecha_publicacion DESC";
-
-$stmt = $mysqli->prepare($sql);
-
-if (count($parametros) > 0) {
-    $stmt->bind_param($tipos, ...$parametros);
-}
-
-$stmt->execute();
-$resultado = $stmt->get_result();
-$productos = $resultado->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-$categorias = [
-    ["categoria" => "Ropa"],
-    ["categoria" => "Libros"],
-    ["categoria" => "Tecnología"],
-    ["categoria" => "Hogar"],
-    ["categoria" => "Juguetes"],
-    ["categoria" => "Otros"]
-];
 
 $logueado = usuarioLogueado();
 $idUsuarioActual = $logueado ? (int) $_SESSION["usuario"] : 0;

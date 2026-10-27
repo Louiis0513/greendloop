@@ -6,6 +6,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: mis_publicaciones.php");
@@ -63,6 +64,9 @@ $stmt = $mysqli->prepare(
 );
 $stmt->bind_param("ii", $idProducto, $idUsuario);
 $stmt->execute();
+$stmt->close();
+
+cacheParcheProductoEliminado($mysqli, $idProducto);
 
 guardarMensaje("Publicación eliminada correctamente.");
 header("Location: mis_publicaciones.php");

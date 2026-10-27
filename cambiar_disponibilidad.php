@@ -6,6 +6,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 // Solo permite recibir solicitudes mediante POST.
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -27,6 +28,8 @@ if (
     exit;
 }
 
+$disponibleInt = (int) $disponible;
+
 // Actualizar únicamente los objetos del usuario que inició sesión.
 $stmt = $mysqli->prepare(
     "UPDATE productos
@@ -36,12 +39,15 @@ $stmt = $mysqli->prepare(
 
 $stmt->bind_param(
     "iii",
-    $disponible,
+    $disponibleInt,
     $idProducto,
     $idUsuario
 );
 
 $stmt->execute();
+$stmt->close();
+
+cacheParcheProducto($mysqli, $idProducto);
 
 guardarMensaje("Se ha actualizado la disponibilidad.");
 header("Location: mis_publicaciones.php");

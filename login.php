@@ -4,6 +4,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 soloVisitantes();
+enviarHeadersCache('privado');
 
 $mensaje = "";
 $claseMensaje = "";

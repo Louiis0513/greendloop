@@ -6,6 +6,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 $idUsuario = (int) $_SESSION["usuario"];
 $idProducto = (int) ($_POST["id_producto"] ?? $_GET["id"] ?? 0);
@@ -65,6 +66,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $idUsuario
         );
         $stmt->execute();
+        $stmt->close();
+
+        cacheParcheProducto($mysqli, $idProducto);
 
         guardarMensaje("Publicación actualizada correctamente.");
         header("Location: mis_publicaciones.php");

@@ -1,0 +1,4 @@
+# Caché generada en runtime (sí versionar cache/.htaccess)
+cache/*.cache
+cache/*.tmp
+.DS_Store

@@ -67,6 +67,8 @@ if (!$esTrueque) {
     $stmt->execute();
     $stmt->close();
 
+    cacheParcheStats($mysqli);
+
     guardarMensaje("Solicitud de regalo enviada. Te avisaremos aquí cuando la respondan.");
     header("Location: mis_solicitudes.php?vista=enviadas");
     exit;
@@ -139,6 +141,7 @@ try {
     $stmt->close();
 
     $mysqli->commit();
+    cacheParcheStats($mysqli);
     guardarMensaje("Propuesta de trueque enviada. La otra persona elegirá uno de tus objetos.");
     header("Location: mis_solicitudes.php?vista=enviadas");
     exit;

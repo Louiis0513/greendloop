@@ -46,6 +46,10 @@ O importa `bd/green_loop.sql` desde phpMyAdmin.
 > (crea `solicitud_ofrecimientos` sin borrar datos).
 > Identidad visual: ver `DESIGN.md`.
 
+## Cache (hosting compartido)
+
+Archivos bajo `cache/` (TTL 4 h + parche write-through). Se actualiza al publicar/editar/eliminar, cambiar disponibilidad o aceptar/cancelar solicitudes. Búsqueda por texto no se cachea. Estáticos con `.htaccess`.
+
 ## Stack
 
-PHP + mysqli + CSS propio (dark verde) + sesiones. Fotos en `img_productos/`. Sin frameworks.
+PHP + mysqli + CSS propio (dark verde) + sesiones. Fotos en `img_productos/`. Sin Redis.

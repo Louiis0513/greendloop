@@ -6,6 +6,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 soloVisitantes();
+enviarHeadersCache('privado');
 
 $mensaje = "";
 $nombre = "";
@@ -47,6 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         try {
             $stmt->execute();
+            $stmt->close();
+            cacheParcheStats($mysqli);
 
             guardarMensaje("Cuenta creada correctamente.");
             header("Location: login.php");

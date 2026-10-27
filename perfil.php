@@ -5,6 +5,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 $idUsuario = (int) $_SESSION["usuario"];
 $mensaje = "";

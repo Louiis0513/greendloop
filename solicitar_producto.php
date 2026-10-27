@@ -5,6 +5,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 $idUsuario = (int) $_SESSION["usuario"];
 $idProducto = (int) ($_GET["id_producto"] ?? 0);
@@ -15,16 +16,7 @@ if ($idProducto <= 0) {
     exit;
 }
 
-$stmt = $mysqli->prepare(
-    "SELECT p.*, u.nombre AS propietario
-     FROM productos p
-     JOIN usuarios u ON p.id_usuario = u.id_usuario
-     WHERE p.id_producto = ? AND p.disponible = 1"
-);
-$stmt->bind_param("i", $idProducto);
-$stmt->execute();
-$producto = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+$producto = obtenerProductoDisponible($mysqli, $idProducto);
 
 if (!$producto) {
     guardarMensaje("Este objeto ya no está disponible.");

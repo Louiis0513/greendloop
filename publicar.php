@@ -6,6 +6,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 $error = "";
 
@@ -103,6 +104,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         );
 
         $stmt->execute();
+        $nuevoId = (int) $mysqli->insert_id;
+        $stmt->close();
+
+        if ($nuevoId > 0) {
+            cacheParcheProducto($mysqli, $nuevoId);
+        }
 
         guardarMensaje("¡Objeto publicado correctamente!");
         header("Location: mis_publicaciones.php");

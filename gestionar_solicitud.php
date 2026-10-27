@@ -6,6 +6,7 @@ require_once __DIR__ . "/includes/conexion.php";
 require_once __DIR__ . "/includes/funciones.php";
 
 requiereLogin();
+enviarHeadersCache('privado');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: mis_solicitudes.php");
@@ -89,6 +90,7 @@ if ($accion === "cancelada") {
             $idsLiberar[] = $idOfrecidoElegido;
         }
 
+        $idsParche = [];
         foreach ($idsLiberar as $idLiberar) {
             $stmt = $mysqli->prepare(
                 "SELECT COUNT(*) AS total
@@ -112,10 +114,15 @@ if ($accion === "cancelada") {
 
                 $stmt->bind_param("i", $idLiberar);
                 $stmt->execute();
+                $idsParche[] = $idLiberar;
             }
         }
 
         $mysqli->commit();
+
+        foreach ($idsParche as $idParche) {
+            cacheParcheProducto($mysqli, (int) $idParche);
+        }
 
         guardarMensaje(
             "Negociación cancelada. Se revisó la disponibilidad del objeto."
@@ -229,6 +236,8 @@ if ($accion === "aceptar_trueque") {
         $stmt->close();
 
         $mysqli->commit();
+        cacheParcheProducto($mysqli, $idProducto);
+        cacheParcheProducto($mysqli, $idOfrecido);
         guardarMensaje("Trueque aceptado. Ya pueden acordar el encuentro para hacer el cambio.");
     } catch (Throwable $e) {
         $mysqli->rollback();
@@ -297,6 +306,9 @@ if ($stmt->affected_rows === 1) {
 
         $stmtProducto->bind_param("i", $idProducto);
         $stmtProducto->execute();
+        $stmtProducto->close();
+
+        cacheParcheProducto($mysqli, $idProducto);
 
         guardarMensaje(
             "Solicitud aceptada. El objeto ya no está disponible para nuevas solicitudes."
